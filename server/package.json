@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "tsc -b",
     "dev": "tsc -b && bun dist/index.js"
   },
   "devDependencies": {
