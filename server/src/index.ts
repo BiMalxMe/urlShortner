@@ -9,9 +9,10 @@ app.use(cors())
 app.use(express.json())
 
 //initialize redis
-
+console.log(process.env.REDIS_URL)
 const redisclient = createClient({
-    url: "redis://default:dyHQJuPfvQ8jMyIUQIQQPWKiJOkme9cS@redis-14716.c15.us-east-1-4.ec2.redns.redis-cloud.com:14716"
+    url: process.env.REDIS_URL as string,
+    
   });
   
   redisclient.on("connect", () => {
@@ -64,10 +65,13 @@ app.get("/:shorturlid",async(req,res) => {
         return;
     }
     const originalUrl = await redisclient.hGet("urls",shorturlId);
-    res.json({
-        "status" : true,
-        "data" : originalUrl
-    })
+    if(!originalUrl){
+        res.json({
+            "status" :false
+        })
+        return;
+    }
+    res.redirect(originalUrl)
 })
 
 app.listen(3001,async () => {

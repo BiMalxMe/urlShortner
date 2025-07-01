@@ -1,103 +1,93 @@
-import Image from "next/image";
+"use client";
+import { useState } from "react";
+import axios from "axios";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [longUrl, setLongUrl] = useState("");
+  const [shortUrl, setShortUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleShorten = async () => {
+    setLoading(true);
+    setShortUrl("");
+    setCopied(false);
+    // Simulate network delay and dummy axios POST
+    setTimeout(async () => {
+      try {
+        // Dummy request (replace with real endpoint later)
+        await axios.post("https://dummy-endpoint.com/shorten", { url: longUrl });
+        setShortUrl("https://short.ly/abc123");
+      } catch {
+        setShortUrl("https://short.ly/abc123"); // Always dummy for now
+      }
+      setLoading(false);
+    }, 1000);
+  };
+
+  const handleCopy = async () => {
+    if (shortUrl) {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-black/90 dark:bg-zinc-950/90">
+      <div className="bg-gradient-to-br from-pink-500 via-purple-600 to-blue-500 rounded-3xl shadow-2xl p-1 w-full max-w-md border border-zinc-800 backdrop-blur-md transition-transform hover:scale-[1.025] hover:shadow-3xl duration-300">
+        <div className="bg-zinc-900/95 dark:bg-zinc-950/95 rounded-2xl p-8">
+          <h1 className="text-4xl font-extrabold text-center mb-2 bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent tracking-tight drop-shadow-lg">Shortner</h1>
+          <p className="text-zinc-400 text-center mb-8 text-base">Paste your long URL below to get a short, shareable link instantly.</p>
+          <div className="flex flex-col gap-5">
+            <div className="relative flex items-center">
+              {/* Input for long URL */}
+              <input
+                type="url"
+                placeholder="Paste your long URL here..."
+                className="flex-1 px-4 py-3 rounded-lg bg-zinc-800 text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-zinc-900 transition-all duration-200 shadow-inner"
+                value={longUrl}
+                onChange={e => setLongUrl(e.target.value)}
+                disabled={loading}
+              />
+              {/* Info icon with tooltip */}
+              <div className="ml-2 group relative cursor-pointer">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-blue-400 hover:text-blue-500 transition-colors duration-200">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                  <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 16v-4m0-4h.01" />
+                </svg>
+                <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max px-3 py-1.5 rounded bg-zinc-900 text-xs text-zinc-200 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 shadow-lg border border-zinc-700">
+                  Enter a valid URL (e.g. https://example.com)
+                </span>
+              </div>
+            </div>
+            {/* Button to shorten URL */}
+            <button
+              className="relative overflow-hidden bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 active:scale-95 text-white font-bold py-3 rounded-lg shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-zinc-900 group disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={handleShorten}
+              disabled={!longUrl || loading}
+            >
+              <span className="relative z-10">{loading ? "Shortening..." : "Shorten URL"}</span>
+              {/* Ripple effect */}
+              <span className="absolute inset-0 group-active:scale-110 group-active:bg-blue-800/20 transition-transform duration-200 rounded-lg" />
+            </button>
+          </div>
+          {shortUrl && (
+            <div className="mt-8 flex flex-col items-center gap-2 animate-fade-in">
+              <span className="text-zinc-300 mb-1">Your short URL:</span>
+              <span
+                className={`px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-mono text-base rounded-full shadow-md cursor-pointer select-all transition-all duration-200 border border-zinc-700 ${copied ? 'scale-105' : ''}`}
+                style={{ letterSpacing: "normal" }}
+                onClick={handleCopy}
+                title="Click to copy"
+              >
+                {shortUrl}
+              </span>
+              {copied && <span className="text-green-400 text-xs mt-1 animate-pulse">Copied!</span>}
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
