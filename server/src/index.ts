@@ -6,7 +6,7 @@ import rateLimit from "express-rate-limit"
 
 const app = express()
 app.use(cors((process.env.NODE_ENV === "production") ? {
-  origin: "https://bimalxshorten.vercel.app",
+  origin: "bimalxshorten.vercel.app",
   credentials: true
 } : {
   origin: "http://localhost:3000",
