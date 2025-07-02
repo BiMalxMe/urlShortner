@@ -1,7 +1,7 @@
 import express from "express"
 import cors from "cors"
 import { createClient } from "redis"
-import { encodebase62 } from "./services/encodebase62"
+import { encodebase62 } from "./services/encodebase62.js"
 
 const app = express()
 app.use(cors())
