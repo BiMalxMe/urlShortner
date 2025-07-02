@@ -2,10 +2,20 @@ import express from "express"
 import cors from "cors"
 import { createClient } from "redis"
 import { encodebase62 } from "./services/encodebase62.js"
+import rateLimit from "express-rate-limit"
 
 const app = express()
-app.use(cors())
+app.use(cors({
+  origin: "https://bimalxshorten.vercel.app",
+  credentials: true
+}))
 app.use(express.json())
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, //limit to 100 requests per 15 minutes
+  message: "Too many requests, please try again later."
+})
+app.use(limiter)
 
 // Initialize Redis
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379"
