@@ -28,6 +28,8 @@
 
     // Add these:
     "rootDir": "./src",
-    "outDir": "./dist"
-  }
+    "outDir": "./dist",    
+  },
+  "include": ["src/**/*"]
+
 }
