@@ -7,22 +7,30 @@ export default function Home() {
   const [shortUrl, setShortUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
 
   const handleShorten = async () => {
     setLoading(true);
     setShortUrl("");
     setCopied(false);
-    // Simulate network delay and dummy axios POST
-    setTimeout(async () => {
-      try {
-        // Dummy request (replace with real endpoint later)
-        await axios.post("https://dummy-endpoint.com/shorten", { url: longUrl });
-        setShortUrl("https://short.ly/abc123");
-      } catch {
-        setShortUrl("https://short.ly/abc123"); // Always dummy for now
+    setError("");
+    
+    try {
+      const response = await axios.post("https://m.up.railway.app/shorten", { 
+        orgrl: longUrl 
+      });
+      
+      if (response.data.status) {
+        setShortUrl(`https://m.up.railway.app/${response.data.message}`);
+      } else {
+        setError(response.data.error || "Failed to shorten URL");
       }
+    } catch (error) {
+      console.error("Error shortening URL:", error);
+      setError("Failed to connect to server. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const handleCopy = async () => {
@@ -30,6 +38,12 @@ export default function Home() {
       await navigator.clipboard.writeText(shortUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
+    }
+  };
+
+  const handleOpenInNewTab = () => {
+    if (shortUrl) {
+      window.open(shortUrl, '_blank');
     }
   };
 
@@ -72,17 +86,33 @@ export default function Home() {
               <span className="absolute inset-0 group-active:scale-110 group-active:bg-blue-800/20 transition-transform duration-200 rounded-lg" />
             </button>
           </div>
+          {error && (
+            <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
+          )}
           {shortUrl && (
             <div className="mt-8 flex flex-col items-center gap-2 animate-fade-in">
               <span className="text-zinc-300 mb-1">Your short URL:</span>
-              <span
-                className={`px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-mono text-base rounded-full shadow-md cursor-pointer select-all transition-all duration-200 border border-zinc-700 ${copied ? 'scale-105' : ''}`}
-                style={{ letterSpacing: "normal" }}
-                onClick={handleCopy}
-                title="Click to copy"
-              >
-                {shortUrl}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`px-5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-mono text-base rounded-full shadow-md cursor-pointer select-all transition-all duration-200 border border-zinc-700 ${copied ? 'scale-105' : ''}`}
+                  style={{ letterSpacing: "normal" }}
+                  onClick={handleCopy}
+                  title="Click to copy"
+                >
+                  {shortUrl}
+                </span>
+                <button
+                  onClick={handleOpenInNewTab}
+                  className="p-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-full shadow-md transition-all duration-200 border border-zinc-700 hover:scale-110"
+                  title="Open in new tab"
+                >
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </button>
+              </div>
               {copied && <span className="text-green-400 text-xs mt-1 animate-pulse">Copied!</span>}
             </div>
           )}
