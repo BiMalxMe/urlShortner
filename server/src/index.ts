@@ -1,103 +1,104 @@
 import express from "express"
 import cors from "cors"
 import { createClient } from "redis"
-import { redis } from "bun"
 import { encodebase62 } from "./services/base62_encoder"
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-//initialize redis
-console.log(process.env.REDIS_URL)
+// Initialize Redis
+const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379"
+console.log("Connecting to Redis:", REDIS_URL)
+
 const redisclient = createClient({
-    url: process.env.REDIS_URL as string,
-    
-  });
-  
-  redisclient.on("connect", () => {
+    url: REDIS_URL,
+});
+
+redisclient.on("connect", () => {
     console.log("Redis connected");
-  });
-  
-  redisclient.on("error", (err) => {
+});
+
+redisclient.on("error", (err) => {
     console.error("Redis error:", err);
-  });
-  
-  // Important: connect to
+});
 
-
-
-app.post("/shorten",async(req,res) => {
+app.post("/shorten", async (req, res) => {
     try {
         const orgrl = req.body.orgrl;
-        if(!orgrl) {
-            res.json({
-                "status" : false,
-                "Error" : "Please pass the orignal url"
+        if (!orgrl) {
+             res.status(400).json({
+                "status": false,
+                "error": "Please pass the original url"
             })
-            return;
+            return
         }
         
         const id = await redisclient.incr("global_counter");
         const shortUrlId = encodebase62(id)
 
-        await redisclient.hSet("urls",shortUrlId, orgrl)
+        await redisclient.hSet("urls", shortUrlId, orgrl)
 
         res.json({
-            "status" : true,
-            "message" : shortUrlId
+            "status": true,
+            "message": shortUrlId
         })
-    }catch(error){
-        console.log(error)
-        res.json({
-            "status ":false,
-            "error" : error
+    } catch (error) {
+        console.error("Error in /shorten:", error)
+        res.status(500).json({
+            "status": false,
+            "error": "Internal server error"
         })
     }
 })
 
-app.get("/healthcheck",(req,res) => {
+app.get("/healthcheck", (req, res) => {
     res.json({
-        "status" : true,
-        "message" : "server is running"
+        "status": true,
+        "message": "server is running"
     })
 })
 
-app.get("/:shorturlid",async(req,res) => {
+app.get("/:shorturlid", async (req, res) => {
     try {
-        const shorturlId =  req.params.shorturlid
-        console.log(shorturlId)
-        if(!shorturlId){
-            res.json({
-                "status" :false,
-                "message" : "short url is required"
+        const shorturlId = req.params.shorturlid
+        console.log("Looking up:", shorturlId)
+        
+        if (!shorturlId) {
+             res.status(400).json({
+                "status": false,
+                "message": "short url is required"
             })
-            return;
+            return
         }
-        const originalUrl = await redisclient.hGet("urls",shorturlId);
-        if(!originalUrl){
-            res.json({
-                "status" :false,
-                "message" : "url not found"
+        
+        const originalUrl = await redisclient.hGet("urls", shorturlId);
+        if (!originalUrl) {
+             res.status(404).json({
+                "status": false,
+                "message": "url not found"
             })
-            return;
+            return
         }
+        
         res.redirect(originalUrl)
-    } catch(error) {
-        console.log(error)
-        res.json({
+    } catch (error) {
+        console.error("Error in redirect:", error)
+        res.status(500).json({
             "status": false,
-            "error": error
+            "error": "Internal server error"
         })
     }
 })
 
-app.listen(3001,async () => {
+const PORT = process.env.PORT || 3001
+
+app.listen(PORT, async () => {
     try {
         await redisclient.connect();
-        console.log("redis working")
-        console.log("server is running")
-    } catch(error) {
+        console.log("Redis connected successfully")
+        console.log(`Server is running on port ${PORT}`)
+    } catch (error) {
         console.error("Failed to start server:", error)
         process.exit(1)
     }
