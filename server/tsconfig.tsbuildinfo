@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/services/base62_encoder.ts"],"version":"5.8.3"}
+{"root":["./src/index.ts","./src/services/encodebase62.ts"],"version":"5.8.3"}
