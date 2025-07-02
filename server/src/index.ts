@@ -5,8 +5,9 @@ import { encodebase62 } from "./services/encodebase62.js"
 import rateLimit from "express-rate-limit"
 
 const app = express()
-app.use(cors((process.env.NODE_ENV === "production") ? {
-  origin: "bimalxshorten.vercel.app",
+console.log(process.env.NODE_ENV)
+app.use(cors((process.env.NODE_ENV == "production") ? {
+  origin: "https://bimalxshorten.vercel.app",
   credentials: true
 } : {
   origin: "http://localhost:3000",
